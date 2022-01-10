@@ -2,29 +2,22 @@ from __future__ import print_function
 # import state
 # import sys
 # from datetime import datetime
-SOFTWAREVERSION = "V003"
+SOFTWAREVERSION = "V004"
 import wirelessSensors
 
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events
 
-# Check for user imports
-try:
-    import conflocal as config
-except ImportError:
-    import config
+import config
 
 print("-----------------")
-print("WeatherSense Monitoring Software")
-print("Software Version ", SOFTWAREVERSION)
+print("WeatherSense Monitoring Software Version ", SOFTWAREVERSION)
 print("-----------------")
 
 
 ##########
 # set up scheduler
-
-
 # Scheduler Helpers
 
 # print out faults inside events

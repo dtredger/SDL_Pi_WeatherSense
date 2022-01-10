@@ -4,7 +4,7 @@ from __future__ import division
 from past.utils import old_div
 import state
 
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 
 # Check for user imports
 try:
@@ -12,7 +12,7 @@ try:
 except ImportError:
                 import config
 
-GPIO.setmode(GPIO.BCM)
+# GPIO.setmode(GPIO.BCM)
 
 ###############
 # Turn OLED On and Off
@@ -25,32 +25,32 @@ GROVEPOWERSAVEPIN = 12
 ################
 # Unit Conversion
 ################
-# 
+#
 
 def returnTemperatureCF(temperature):
 	if (state.EnglishMetric == True):
-		# return Metric 
+		# return Metric
 		return temperature
 	else:
 		return (9.0/5.0)*temperature + 32.0
 
 def returnTemperatureCFUnit():
 	if (state.EnglishMetric == True):
-		# return Metric 
+		# return Metric
 		return "C"
 	else:
 		return  "F"
 
 def returnWindSpeedUnit():
 	if (state.EnglishMetric == True):
-		# return Metric 
+		# return Metric
 		return "KPH"
 	else:
 		return  "MPH"
 
 def returnWindSpeed(wind):
 	if (state.EnglishMetric == True):
-		# return Metric 
+		# return Metric
 		return wind
 	else:
 		return wind/1.6
@@ -149,6 +149,3 @@ def returnPercentLeftInBattery(currentVoltage, maxVolt):
                 return returnPercent
 
         return 0
-
-
-

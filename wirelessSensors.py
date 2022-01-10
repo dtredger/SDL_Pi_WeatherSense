@@ -15,6 +15,7 @@ import MySQLdb as mdb
 import traceback
 import state
 
+
 from paho.mqtt import publish
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -34,6 +35,7 @@ def nowStr():
 
 
 #   We're using a queue to capture output as it occurs
+
 try:
     from Queue import Queue, Empty
 except ImportError:
@@ -93,7 +95,7 @@ def processFT020T(sLine, lastFT020TTimeStamp, ReadingCount):
     # now check for adding record
 
     if ((ReadingCount % config.RecordEveryXReadings) != 0):
-        # skip write to database 
+        # skip write to database
         if (config.SWDEBUG):
             sys.stdout.write("skipping write to database \n")
 
@@ -115,7 +117,7 @@ def processFT020T(sLine, lastFT020TTimeStamp, ReadingCount):
         if (config.SWDEBUG):
             sys.stdout.write("error--->>> Temperature reading from FT020T\n")
             sys.stdout.write('This is the raw temperature: ' + str(wTemp) + '\n')
-        # put in previous temperature 
+        # put in previous temperature
         wtemp = OutdoorTemperature
         # print("wTemp=%s %s", (str(wTemp),nowStr() ));
     if (ucHumi > 100.0):
@@ -275,7 +277,7 @@ def processF016TH(sLine, ReadingCountArray):
     return
 
 
-# processes Generic Packets 
+# processes Generic Packets
 def processWeatherSenseGeneric(sLine):
     if (config.SWDEBUG):
         sys.stdout.write("processing Generic Data\n")
@@ -525,27 +527,39 @@ def readSensors():
         else:  # got line
             pulse -= 1
             sLine = line.decode()
-            #   See if the data is something we need to act on...
 
-            if (sLine.find('F007TH') != -1) or (sLine.find('FT0300') != -1) or (sLine.find('F016TH') != -1) or (
-                    sLine.find('FT020T') != -1):
 
-                if ((sLine.find('F007TH') != -1) or (sLine.find('F016TH') != -1)):
-                    processF016TH(sLine, IndoorReadingCountArray)
-                if ((sLine.find('FT0300') != -1) or (sLine.find('FT020T') != -1)):
-                    lastFT020TTimeStamp = processFT020T(sLine, lastFT020TTimeStamp, FT020Count)
-                    FT020Count = FT020Count + 1
+            if "No supported devices found" in sLine:
+                print("###### Error ######")
+                print("No supported devices found.")
+                print("is SDR Radio Dongle connected?")
+                print("###### -_-; ######")
 
-            if (sLine.find('SolarMAX') != -1):
+            try:
+                json_data = json.loads(sLine)
+                model_name = json_data["model"]
+            except Exception as e:
+                model_name = ''
+
+            # See if the data is something we need to act on...
+            if ('F016TH' in model_name) or ('F007TH' in model_name):
+                # F007TH or F016TH data found (indoor data)
+                processF016TH(json_data, IndoorReadingCountArray)
+            if ('FT0300' in model_name) or ('FT020T' in model_name):
+                # FT0300 or FT020T data found (outdoor data)
+                lastFT020TTimeStamp = processFT020T(json_data, lastFT020TTimeStamp, FT020Count)
+                FT020Count = FT020Count + 1
+            if ('SolarMAX' in model_name):
+                # SolarMAX data found
                 processSolarMAX(sLine)
-
-            if (sLine.find('AQI') != -1):
+            if ('AQI' in model_name):
+                # AQI data found
                 processWeatherSenseAQI(sLine)
-
-            if (sLine.find('TB') != -1):
+            if ('TB' in model_name):
+                # TB data found
                 processWeatherSenseTB(sLine)
-
-            if (sLine.find('Generic') != -1):
+            if ('Generic' in model_name):
+                # Generic data found
                 processWeatherSenseGeneric(sLine)
 
         sys.stdout.flush()
