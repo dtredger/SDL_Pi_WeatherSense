@@ -2,7 +2,6 @@
 #
 import config
 from src.helpers import *
-from src.mqtt import mqtt_publish_single
 
 import json
 import sys
@@ -15,8 +14,25 @@ import traceback
 # import MySQLdb as mdb
 from src import influxdb_client
 
-# Sample sLine:
-# '{"time" : "2021-06-07 23:32:11", "model" : "SwitchDoc Labs FT020T AIO", "device" : 12, "id" : 0, "batterylow" : 0, "avewindspeed" : 0, "gustwindspeed" : 0, "winddirection" : 9, "cumulativerain" : 255, "temperature" : 1177, "humidity" : 66, "light" : 0, "uv" : 0, "mic" : "CRC"}\n'
+# Sample json parsed from sLine:
+# {
+#   "time": "2021-06-07 23:32:11",
+#   "model": "SwitchDoc Labs FT020T AIO",
+#   "device": 12,
+#   "id": 0,
+#   "batterylow": 0,
+#   "avewindspeed": 0,
+#   "gustwindspeed": 0,
+#   "winddirection": 9,
+#   "cumulativerain": 255,
+#   "temperature": 1177,
+#   "humidity": 66,
+#   "light": 0,
+#   "uv": 0,
+#   "mic": "CRC"
+# }
+# Note that time appears to be set to the timezone of the receiving computer (ie Raspberry pi system time)
+# before arriving here—possibly by rtl_433
 
 def processFT020T(json_data, lastFT020TTimeStamp, ReadingCount):
     if (config.SWDEBUG):
@@ -46,6 +62,7 @@ def processFT020T(json_data, lastFT020TTimeStamp, ReadingCount):
     raw_temp = json_data["temperature"]
     ucHumi = json_data["humidity"]
     wTemp = (raw_temp - 400) / 10.0
+    wTemp = fahrenheit_to_celsius(wTemp)
     # deal with error condtions
     if (wTemp > 140.0):
         # error condition from sensor
@@ -55,6 +72,7 @@ def processFT020T(json_data, lastFT020TTimeStamp, ReadingCount):
         # put in previous temperature
         wtemp = OutdoorTemperature
         # print("wTemp=%s %s", (str(wTemp),nowStr() ));
+
     if (ucHumi > 100.0):
         # bad humidity: put in previous humidity if exists
         if (config.SWDEBUG):
@@ -97,8 +115,10 @@ def processFT020T(json_data, lastFT020TTimeStamp, ReadingCount):
         print("writing to influxdb")
         INFLUX_INDOOR_DATABASE = 'indoor_db'
         INFLUX_OUTDOOR_DATABASE = 'outdoor_db'
-        record = influxdb_client.json_format('WindSpeed', lastFT0202TTimeStamp, json_data['device'], WindSpeed)
-        influxdb_client.insert_records(config.INFLUX_OUTDOOR_DATABASE, [record])
+        wind_reading = influxdb_client.json_format('wind_speed', lastFT0202TTimeStamp, json_data['device'], WindSpeed)
+        temp_reading = influxdb_client.json_format('humidity', lastFT0202TTimeStamp, json_data['device'], ucHumi)
+        humidity_reading = influxdb_client.json_format('temperature', lastFT0202TTimeStamp, json_data['device'], wTemp)
+        influxdb_client.insert_records(config.INFLUX_OUTDOOR_DATABASE, [wind_reading, temp_reading, humidity_reading])
 
 
     return lastFT0202TTimeStamp
