@@ -1,24 +1,14 @@
-from __future__ import print_function
-# import state
-# import sys
-# from datetime import datetime
-SOFTWAREVERSION = "V004"
-import wirelessSensors
-
+# from __future__ import print_function
 import time
 from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events
 
 import config
+from src.read_sdr import read_sensors
 
-print("-----------------")
+SOFTWAREVERSION = "V004"
+
 print("WeatherSense Monitoring Software Version ", SOFTWAREVERSION)
-print("-----------------")
-
-
-##########
-# set up scheduler
-# Scheduler Helpers
 
 # print out faults inside events
 def ap_my_listener(event):
@@ -26,21 +16,13 @@ def ap_my_listener(event):
         print(event.exception)
         print(event.traceback)
 
-
 scheduler = BackgroundScheduler()
-
 # for debugging
 scheduler.add_listener(ap_my_listener, apscheduler.events.EVENT_JOB_ERROR)
 
-# read wireless sensor package
-scheduler.add_job(wirelessSensors.readSensors)  # run in background
-
-scheduler.print_jobs()
+scheduler.add_job(read_sensors)  # run in background
 
 # start scheduler
 scheduler.start()
-print("-----------------")
 print("Scheduled Jobs")
-print("-----------------")
 scheduler.print_jobs()
-print("-----------------")
