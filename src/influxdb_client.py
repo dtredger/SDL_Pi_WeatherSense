@@ -1,13 +1,6 @@
-
-import config
-config.enable_InfluxDB = True
-config.INFLUX_INDOOR_DATABASE = 'indoor_db'
-config.INFLUX_OUTDOOR_DATABASE = 'outdoor_db'
 from influxdb import InfluxDBClient
 
-
-
-def json_format(measurement, timestamp, device_id, field_val):
+def format_point(measurement, timestamp, device_id, field_val):
     return {
         "measurement": measurement,
         "time": timestamp,
@@ -19,17 +12,11 @@ def json_format(measurement, timestamp, device_id, field_val):
         }
     }
 
-
 def insert_records(database, records_arr):
     client = InfluxDBClient(database=database)
     # client.create_database(database)
-    result = client.write_points(records_arr)
-    if result == True:
-        print("Saved Points:")
-        print(str(records_arr))
-    else:
-        print("Points not saved")
-        print(str(records_arr))
+    return client.write_points(records_arr)
+
 
 # --- --- --- --- --- ---
 #

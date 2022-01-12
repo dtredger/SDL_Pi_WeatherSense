@@ -6,8 +6,8 @@ from threading import Thread
 from queue import Queue, Empty
 
 import config
-import src.sensors.F016TH
-import src.sensors.FT020T
+from src.sensors.F016TH import process_F016TH
+from src.sensors.FT020T import process_FT020T
 
 ON_POSIX = 'posix' in sys.builtin_module_names
 
@@ -33,6 +33,9 @@ def read_sensors():
     print("starting 433MHz scanning")
     print("######")
 
+    last_F016TH = ''
+    last_FT020T = ''
+
     while True:
         try:
             src, line = queue_obj.get(timeout=1)
@@ -48,12 +51,22 @@ def read_sensors():
             except Exception as e:
                 model_name = '<not found>'
 
+            # F016TH data found (small indoor sensor)
             if ('F016TH' in model_name):
-                # F016TH data found (small indoor sensor)
-                processF016TH(json_data, IndoorReadingCountArray)
-            elif ('FT0300' in model_name):
-                # FT020T data found (outdoor sensor with anemometer)
-                processFT020T(json_data)
+                if json_data["time"] == last_F016TH:
+                    if config.SWDEBUG:
+                        print("duplicate F016TH reading")
+                elif process_F016TH(json_data):
+                    last_F016TH = json_data["time"]
+
+            # FT020T data found (outdoor sensor with anemometer)
+            elif ('FT020T' in model_name):
+                if json_data["time"] == FT020T:
+                    if config.SWDEBUG:
+                        print("duplicate FT020T reading")
+                elif process_FT020TH(json_data):
+                    last_FT020T = json_data["time"]
+
             else:
                 print(sLine)
 

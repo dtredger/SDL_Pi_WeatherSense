@@ -1,57 +1,63 @@
-# Interval between readings appears to be ~53s
-
-# processes Inside Temperature and Humidity
-import config
-from src.helpers import *
-
 import json
 import sys
-from subprocess import PIPE, Popen, STDOUT
-from threading import Thread
-import datetime
-import traceback
 
-from src import influxdb_client
+import config
+from src.helpers import *
+from src import influxdb_client as influx_cli
 
-# sample sLine
-# '{"time" : "2021-06-07 23:32:43", "model" : "SwitchDoc Labs F016TH Thermo-Hygrometer", "device" : 187, "modelnumber" : 5, "channel" : 1, "battery" : "OK", "temperature_F" : 77.200, "humidity" : 67, "mic" : "CRC"}\n'
+# Sample json parsed from sLine:
+# {
+#   "time": "2021-06-07 23:32:43",
+#   "model": "SwitchDoc Labs F016TH Thermo-Hygrometer",
+#   "device": 187,
+#   "modelnumber": 5,
+#   "channel": 1,
+#   "battery": "OK",
+#   "temperature_F": 77.200,
+#   "humidity": 67,
+#   "mic": "CRC"
+# }
+#
+# * Interval between readings appears to be ~53s
+#
+# * Time appears to be set to the timezone of the receiving computer (ie Raspberry pi system time) before arriving here -- possibly by rtl_433
 
 
-def processF016TH(json_data, ReadingCountArray):
+def process_F016TH(json_data):
     if (config.SWDEBUG):
         sys.stdout.write('Processing F016TH data' + '\n')
         sys.stdout.write(json.dumps(json_data))
-        print(ReadingCountArray)
 
-    var = json_data
+    utc_timestamp = iso_to_utc_timestamp(json_data["time"])
+    temp_celcius = fahrenheit_to_celsius(json_data["temperature_F"])
 
-    lastIndoorReading = nowStr()
+    if (config.ENABLE_INFLUXDB == True):
+        temp_record = influx_cli.format_point(measurement='temperature',
+                                              timestamp=utc_timestamp,
+                                              device_id=json_data["device"],
+                                              field_val=temp_celcius)
+        humid_record = influx_cli.format_point(measurement='humidity',
+                                               timestamp=utc_timestamp,
+                                               device_id=json_data["device"],
+                                               field_val=json_data["humidity"])
 
-    # check for reading count per device
-    # indoor T/H sensors support channels 1-8
-    # the sensor channel needs to be lowered by one
-    chan_array_pos = var['channel'] - 1
+        records = [temp_record, humid_record]
 
-    #if ((ReadingCountArray[var["channel"]] % config.IndoorRecordEveryXReadings) != 0):
-    if (ReadingCountArray[chan_array_pos] % config.IndoorRecordEveryXReadings) != 0:
-        if config.SWDEBUG:
-            print("skipping write to database for channel=", var["channel"])
-        # increment ReadingCountArray
-        # ReadingCountArray[var["channel"]] = ReadingCountArray[var["channel"]] + 1
-        ReadingCountArray[chan_array_pos] += 1
-        return ""
-    # increment ReadingCountArray
-    # ReadingCountArray[var["channel"]] = ReadingCountArray[var["channel"]] + 1
-    ReadingCountArray[chan_array_pos] += 1
+        if json_data["battery"] != 'OK':
+            battery = influx_cli.format_point(measurement='battery',
+                                              timestamp=utc_timestamp,
+                                              device_id=json_data["device"],
+                                              field_val=json_data["battery"])
+            records.append(battery)
 
-    IndoorTemperature = fahrenheit_to_celsius(var["temperature_F"])
-    #IndoorTemperature = var["temperature_F"]
+        insert = influx_cli.insert_records(config.INFLUX_INDOOR_DATABASE, records)
 
-    if (config.enable_InfluxDB == True):
-        database = config.INFLUX_INDOOR_DATABASE
-        temp_record = influxdb_client.json_format('temperature', var["time"], var["device"], IndoorTemperature)
-        humidity_record = influxdb_client.json_format('humidity', var["time"], var["device"], var["humidity"])
-        influxdb_client.insert_records(database, [temp_record, humidity_record])
+        if (config.SWDEBUG):
+            if insert == True:
+                sys.stdout.write("Saved Points:")
+                sys.stdout.write(str(records))
+            else:
+                sys.stdout.write("Points not saved")
+                sys.stdout.write(str(records))
 
-
-    return
+        return insert

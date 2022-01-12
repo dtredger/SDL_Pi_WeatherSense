@@ -1,12 +1,11 @@
-# from __future__ import print_function
 import time
-from apscheduler.schedulers.background import BackgroundScheduler
 import apscheduler.events
+from apscheduler.schedulers.background import BackgroundScheduler
 
 import config
 from src.read_sdr import read_sensors
 
-SOFTWAREVERSION = "V004"
+SOFTWAREVERSION = "V005"
 
 print("WeatherSense Monitoring Software Version ", SOFTWAREVERSION)
 
@@ -19,7 +18,6 @@ def ap_my_listener(event):
 scheduler = BackgroundScheduler()
 # for debugging
 scheduler.add_listener(ap_my_listener, apscheduler.events.EVENT_JOB_ERROR)
-
 scheduler.add_job(read_sensors)  # run in background
 
 # start scheduler
