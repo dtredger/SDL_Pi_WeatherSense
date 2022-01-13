@@ -5,7 +5,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import config
 from src.read_sdr import read_sensors
 
-SOFTWAREVERSION = "V005"
+SOFTWAREVERSION = "V006"
 
 print("WeatherSense Monitoring Software Version ", SOFTWAREVERSION)
 

@@ -61,10 +61,10 @@ def read_sensors():
 
             # FT020T data found (outdoor sensor with anemometer)
             elif ('FT020T' in model_name):
-                if json_data["time"] == FT020T:
+                if json_data["time"] == last_FT020T:
                     if config.SWDEBUG:
                         print("duplicate FT020T reading")
-                elif process_FT020TH(json_data):
+                elif process_FT020T(json_data):
                     last_FT020T = json_data["time"]
 
             else:

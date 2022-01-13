@@ -11,6 +11,11 @@ run the script `linux_install.sh` to install all dependencies. SwitchdocLabs rtl
 - InfluxDB installed and service created (note that as of Jan 2022 version 1.6 will be installed _not_ v2.x)
 - Grafana installed and service created
 
+*rtl_433* will search for configs in these locations:
+- rtl_433.conf
+- /home/pi/.config/rtl_433/rtl_433.conf
+- /usr/local/etc/rtl_433/rtl_433.conf
+- /etc/rtl_433/rtl_433.conf
 
 #### Setup
 
