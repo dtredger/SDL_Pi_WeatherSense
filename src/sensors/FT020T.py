@@ -1,6 +1,8 @@
-# FT020T Sensor
+# FT020T Sensor (outdoor anemometer sensor)
+#
+# Sends data as device_id 12
+
 import json
-import sys
 
 import config
 from src.helpers import *
@@ -30,8 +32,8 @@ from src import influxdb_client as influx_cli
 def parse_humidity(raw_humidity):
     if (raw_humidity > 100.0):
         if (config.SWDEBUG):
-            sys.stdout.write("error--->>> Humidity reading from FT020T\n")
-            sys.stdout.write('This is the raw humidity: ' + str(raw_humidity) + '\n')
+            print("error--->>> Humidity reading from FT020T")
+            print('This is the raw humidity: ' + str(raw_humidity))
         return False
     else:
         return raw_humidity
@@ -43,8 +45,8 @@ def parse_temperature(raw_temp):
     temp_celcius = fahrenheit_to_celsius(temp_f)
     if (temp_celcius > 60):
         if (config.SWDEBUG):
-            sys.stdout.write("error--->>> Temperature reading from FT020T\n")
-            sys.stdout.write('This is the raw temperature: ' + str(raw_temp) + '\n')
+            print("error--->>> Temperature reading from FT020T")
+            print('This is the raw temperature: ' + str(raw_temp))
         return False
     else:
         return temp_celcius
@@ -76,10 +78,10 @@ def format_record(name, value, timestamp, device_id):
 
 def process_FT020T(json_data):
     if (config.SWDEBUG):
-        sys.stdout.write("processing raw FT020T Data: ")
-        sys.stdout.write(json.dumps(json_data))
+        print("processing raw FT020T Data:")
+        print(json.dumps(json_data))
 
-    utc_timestamp = iso_to_utc_timestamp(json_data["time"])
+    utc_time = convert_iso_timezone(json_data["time"])
 
     temp_celcius = parse_temperature(json_data["temperature"])
     humidity = parse_humidity(json_data["humidity"])
@@ -99,41 +101,41 @@ def process_FT020T(json_data):
         records = []
 
         if temp_celcius:
-            pt = format_record("temp_celcius", temp_celcius, utc_timestamp, json_data["device"])
+            pt = format_record("temperature", temp_celcius, utc_time, json_data["device"])
             records.append(pt)
         if humidity:
-            pt = format_record("humidity", humidity, utc_timestamp, json_data["device"])
+            pt = format_record("humidity", humidity, utc_time, json_data["device"])
             records.append(pt)
         if windspeed_kmh:
-            pt = format_record("windspeed_kmh", windspeed_kmh, utc_timestamp, json_data["device"])
+            pt = format_record("windspeed_kmh", windspeed_kmh, utc_time, json_data["device"])
             records.append(pt)
         if windgust_kmh:
-            pt = format_record("windgust_kmh", windgust_kmh, utc_timestamp, json_data["device"])
+            pt = format_record("windgust_kmh", windgust_kmh, utc_time, json_data["device"])
             records.append(pt)
         if wind_direction:
-            pt = format_record("wind_direction", wind_direction, utc_timestamp, json_data["device"])
+            pt = format_record("wind_direction", wind_direction, utc_time, json_data["device"])
             records.append(pt)
         if cumulative_rain:
-            pt = format_record("cumulative_rain", cumulative_rain, utc_timestamp, json_data["device"])
+            pt = format_record("cumulative_rain", cumulative_rain, utc_time, json_data["device"])
             records.append(pt)
         if light_visible:
-            pt = format_record("light_visible", light_visible, utc_timestamp, json_data["device"])
+            pt = format_record("light_visible", light_visible, utc_time, json_data["device"])
             records.append(pt)
         if uv_index:
-            pt = format_record("uv_index", uv_index, utc_timestamp, json_data["device"])
+            pt = format_record("uv_index", uv_index, utc_time, json_data["device"])
             records.append(pt)
         if battery:
-            pt = format_record("battery", battery, utc_timestamp, json_data["device"])
+            pt = format_record("battery", battery, utc_time, json_data["device"])
             records.append(pt)
 
-        insert = influx_cli.insert_records(config.INFLUX_INDOOR_DATABASE, records)
+        insert = influx_cli.insert_records(config.INFLUX_DATABASE, records)
 
         if (config.SWDEBUG):
             if insert == True:
-                sys.stdout.write("Saved Points:")
-                sys.stdout.write(str(records))
+                print(f"Saved Points to #{config.INFLUX_DATABASE}:")
+                print(str(records))
             else:
-                sys.stdout.write("Points not saved")
-                sys.stdout.write(str(records))
+                print("Points not saved:")
+                print(str(records))
 
         return insert

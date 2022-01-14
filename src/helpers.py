@@ -14,8 +14,7 @@ def fahrenheit_to_celsius(value):
     return round(celcius, 2)
 
 # returns the timestamp with 13-digit precision (ms)
-def iso_to_utc_timestamp(iso_str, zone_str='EST'):
+def convert_iso_timezone(iso_str, zone_str='EST'):
     dt_obj = datetime.datetime.fromisoformat(iso_str)
     zone = pytz.timezone(zone_str)
-    utc_obj = zone.localize(dt_obj).astimezone(pytz.utc)
-    return int(utc_obj.timestamp() * 1000)
+    return zone.localize(dt_obj).astimezone(pytz.utc).isoformat()
