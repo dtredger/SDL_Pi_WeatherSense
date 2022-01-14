@@ -17,6 +17,16 @@ run the script `linux_install.sh` to install all dependencies. SwitchdocLabs rtl
 - /usr/local/etc/rtl_433/rtl_433.conf
 - /etc/rtl_433/rtl_433.conf
 
+
+<!-- apscheduler
+influxdb
+
+subprocess
+threading
+queue
+traceback
+gpiozero -->
+
 #### Setup
 
 The various services should auto-start on boot. Setup of Grafana dashboards can all be done in browser (default user/pw = admin/admin)

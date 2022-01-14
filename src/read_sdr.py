@@ -10,7 +10,7 @@ from src.sensors.F016TH import process_F016TH
 from src.sensors.FT020T import process_FT020T
 
 ON_POSIX = 'posix' in sys.builtin_module_names
-
+SCAN_TIMEOUT = 5
 
 rtl_433_cmd = ['/usr/local/bin/rtl_433', '-q', '-F', 'json', '-R', '146', '-R', '147', '-R', '148', '-R', '150', '-R', '151']
 
@@ -21,7 +21,7 @@ def enqueue_output(src, out, queue):
 
 
 # main read 433HMz Sensor Loop
-def read_sensors():
+def read_sdr():
     print("Read Wireless Sensors")
 
     # either ignore output from STDERR or merge it with STDOUT due to subprocess bug
@@ -31,6 +31,7 @@ def read_sensors():
     daemon_thread.daemon = True  # thread dies with the program
     daemon_thread.start()
     print("starting 433MHz scanning")
+    print(f"reading timeout is #{SCAN_TIMEOUT} seconds")
     print("######")
 
     last_F016TH = ''
@@ -38,7 +39,7 @@ def read_sensors():
 
     while True:
         try:
-            src, line = queue_obj.get(timeout=1)
+            src, line = queue_obj.get(timeout=SCAN_TIMEOUT)
         except Empty:
             if config.SWDEBUG:
                 print("queue empty")
