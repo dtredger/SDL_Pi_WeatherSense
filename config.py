@@ -7,3 +7,5 @@ ENABLE_INFLUXDB = True
 # INFLUX_OUTDOOR_DATABASE = 'outdoor_db'
 
 INFLUX_DATABASE = 'montrose_data'
+
+LOG_ABSOLUTE_HUMIDITY = True

@@ -33,18 +33,23 @@ def process_F016TH(json_data):
 
     utc_time = convert_iso_timezone(json_data["time"])
     temp_celcius = fahrenheit_to_celsius(json_data["temperature_F"])
+    rel_humidity = json_data["humidity"]
 
     if (config.ENABLE_INFLUXDB == True):
-        temp_record = influx_cli.format_point(measurement='temperature',
+        records = []
+        records.append(influx_cli.format_point(measurement='temperature',
                                               timestamp=utc_time,
                                               device_id=json_data["device"],
-                                              field_val=temp_celcius)
-        humid_record = influx_cli.format_point(measurement='humidity',
+                                              field_val=temp_celcius))
+        records.append(influx_cli.format_point(measurement='humidity',
                                                timestamp=utc_time,
                                                device_id=json_data["device"],
-                                               field_val=json_data["humidity"])
+                                               field_val=rel_humidity))
 
-        records = [temp_record, humid_record]
+        if config.LOG_ABSOLUTE_HUMIDITY == True and temp_celcius and rel_humidity
+            hum_absolute = absolute_humidity(temp_celcius, humidity)
+            pt = format_record("hum_absolute", hum_absolute, utc_time, json_data["device"])
+            records.append(pt)
 
         if json_data["battery"] != 'OK':
             battery = influx_cli.format_point(measurement='battery',
