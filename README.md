@@ -1,5 +1,7 @@
 # Grafana-WeatherSense
 
+
+
 WeatherSense monitoring of F016TH (indoor) and FT020T (outdoor) sensors. Changes from the existing system:
 - Uses Grafana for data display, rather than the existing python dash-app
 - Uses InfluxDB for data-storage (rather than MySQL)
@@ -30,3 +32,23 @@ gpiozero -->
 #### Setup
 
 The various services should auto-start on boot. Setup of Grafana dashboards can all be done in browser (default user/pw = admin/admin)
+
+- if you forget you can reset with `grafana-cli admin reset-admin-password <new password>`
+
+- influxdb service
+- grafana service
+
+
+#### Auto-Hotspot Fallback
+
+ https://www.raspberryconnect.com/projects/65-raspberrypi-hotspot-accesspoints/158-raspberry-pi-auto-wifi-hotspot-switch-direct-connection
+
+ Relies on
+
+ 1) dnsmasq ("DHCP and caching DNS server")
+
+ 2) hostapd ("wpa/wpa2 authenticator")
+ - config with /etc/hostapd/hostapd.conf
+
+ 3) dhcpcd.services (and alias dhcpcd5.service)
+ - default config /etc/dhcpcd.conf
