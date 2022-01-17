@@ -128,7 +128,7 @@ def process_FT020T(json_data):
             pt = format_record("battery", battery, utc_time, json_data["device"])
             records.append(pt)
 
-        if config.LOG_ABSOLUTE_HUMIDITY == True and temp_celcius and humidity
+        if config.LOG_ABSOLUTE_HUMIDITY == True and temp_celcius and humidity:
             hum_absolute = absolute_humidity(temp_celcius, humidity)
             pt = format_record("hum_absolute", hum_absolute, utc_time, json_data["device"])
             records.append(pt)

@@ -19,6 +19,13 @@ def enqueue_output(src, out, queue):
         queue.put((src, line))
     out.close()
 
+def try_read_sdr():
+    try:
+        read_sdr()
+    except Exception as ex:
+        config.LOGGER.error(ex)
+
+
 
 # main read 433HMz Sensor Loop
 def read_sdr():

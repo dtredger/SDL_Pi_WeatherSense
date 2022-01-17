@@ -46,17 +46,18 @@ def process_F016TH(json_data):
                                                device_id=json_data["device"],
                                                field_val=rel_humidity))
 
-        if config.LOG_ABSOLUTE_HUMIDITY == True and temp_celcius and rel_humidity
-            hum_absolute = absolute_humidity(temp_celcius, humidity)
-            pt = format_record("hum_absolute", hum_absolute, utc_time, json_data["device"])
-            records.append(pt)
+        if config.LOG_ABSOLUTE_HUMIDITY == True and temp_celcius and rel_humidity:
+            hum_absolute = absolute_humidity(temp_celcius, rel_humidity)
+            records.append(influx_cli.format_point(measurement="hum_absolute",
+                                         timestamp=utc_time,
+                                         device_id=json_data["device"],
+                                         field_val=hum_absolute))
 
         if json_data["battery"] != 'OK':
-            battery = influx_cli.format_point(measurement='battery',
+            records.append(influx_cli.format_point(measurement='battery',
                                               timestamp=utc_time,
                                               device_id=json_data["device"],
-                                              field_val=json_data["battery"])
-            records.append(battery)
+                                              field_val=json_data["battery"]))
 
         insert = influx_cli.insert_records(config.INFLUX_DATABASE, records)
 
