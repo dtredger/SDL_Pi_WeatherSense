@@ -55,15 +55,3 @@ Grafana can be configured within the UI itself. If you forget your password (def
 Grafana will run on port 3000 by default. You could probably change it, but I think it makes more sense to run nginx, and have it proxy requests. Like other services, install/unmask/enable/start as necessary. The simplest-possible config is in `nginx.conf`, which should be placed in `/etc/nginx`.
 
 With the service (and grafana running), entering the IP of your Raspberry Pi into the browser will display the Grafana dashboard.
-
-#### Install
-
-run the script `linux_install.sh` to install all dependencies. SwitchdocLabs rtl_433 will be pulled from github, and other dependencies installed, including:
-- InfluxDB installed and service created (note that as of Jan 2022 version 1.6 will be installed _not_ v2.x)
-- Grafana installed and service created
-
-*rtl_433* will search for configs in these locations:
-- rtl_433.conf
-- /home/pi/.config/rtl_433/rtl_433.conf
-- /usr/local/etc/rtl_433/rtl_433.conf
-- /etc/rtl_433/rtl_433.conf
