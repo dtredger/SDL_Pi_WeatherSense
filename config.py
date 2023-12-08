@@ -3,16 +3,15 @@
 import os
 import logging
 
-LOG_NAME = ""
-
-filename_base = os.getcwd() + "/"
+LOG_NAME = "/home/pi/debugger.log"
+# TODO(fix relative naming)
 if LOG_NAME:
-    filename_base += config.log
+    filename_base = config.LOG_NAME
 else:
-    filename_base += '/debugger.log'
+    filename_base = os.getcwd() + "/debugger.log"
 
 logging.basicConfig(filename=filename_base,
-                    level=logging.DEBUG,
+                    level=logging.WARNING,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 LOGGER = logging.getLogger(__name__)

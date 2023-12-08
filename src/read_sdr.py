@@ -12,6 +12,12 @@ from src.sensors.FT020T import process_FT020T
 ON_POSIX = 'posix' in sys.builtin_module_names
 SCAN_TIMEOUT = 5
 
+
+# protocol [146] "SwitchDoc Labs Weather FT020T Sensors"
+# protocol [147] "SwitchDoc Labs F016TH Temperature Humidity Sensor"
+# protocol [148] "SwitchDoc Labs SolarMAX"
+# protocol [150] "SwitchDoc Labs WeatherSenseAQI"
+# protocol [151] "SwitchDoc Labs WeatherSenseTB"
 rtl_433_cmd = ['/usr/local/bin/rtl_433', '-q', '-F', 'json', '-R', '146', '-R', '147', '-R', '148', '-R', '150', '-R', '151']
 
 def enqueue_output(src, out, queue):

@@ -7,7 +7,7 @@ from queue import Queue, Empty
 
 import config
 
-            from gpiozero import CPUTemperature
+from gpiozero import CPUTemperature
 
 
 ON_POSIX = 'posix' in sys.builtin_module_names
